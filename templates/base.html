@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+    <link
+      rel="stylesheet"
+      href="{{url_for('static',filename='css/bootstrap.min.css') }}"
+    />
+    <link
+      rel="stylesheet"
+      href="{{url_for('static',filename='css/bootstrap.css') }}"
+    />
+    <script src="{{url_for('static',filename='js/bootstrap.bundle.min.js') }}"></script>
+  </head>
+
+  <body>
+    <nav class="navbar container navbar-expand-sm navbar-light bg-light">
+      <a class="navbar-brand" href="{{url_for('Home')}}">Home</a>
+      <button
+        class="navbar-toggler d-lg-none"
+        type="button"
+        data-bs-toggle="collapse"
+        data-bs-target="#collapsibleNavId"
+        aria-controls="collapsibleNavId"
+        aria-expanded="false"
+        aria-label="Toggle navigation"
+      ></button>
+      <div class="collapse navbar-collapse" id="collapsibleNavId">
+        <ul class="navbar-nav me-auto mt-2 mt-lg-0">
+          <li class="nav-item dropdown">
+            <a
+              class="nav-link dropdown-toggle"
+              href="#"
+              id="dropdownId"
+              data-bs-toggle="dropdown"
+              aria-haspopup="true"
+              aria-expanded="false"
+              >Dropdown</a
+            >
+            <div class="dropdown-menu" aria-labelledby="dropdownId">
+              <a class="dropdown-item" href="{{url_for('login')}}">Login</a>
+              <a class="dropdown-item" href="{{url_for('getEmail')}}"
+                >forgot password</a
+              >
+              <a class="dropdown-item" href="{{url_for('changePassword')}}"
+                >change password</a
+              >
+              <div class="dropdown-devider"></div>
+              <a class="dropdown-item" href="{{url_for('Register')}}"
+                >Register</a
+              >
+              <a class="dropdown-item" href="{{url_for('getOTPemail')}}"
+                >OTP password change</a
+              >
+              <a class="dropdown-item" href="{{url_for('loginGoogle')}}"
+                >Google login
+              </a>
+            </div>
+          </li>
+        </ul>
+
+        {% if session['user'] %}
+
+        <form
+          class="d-flex my-2 my-lg-0"
+          action="{{url_for('Logout')}}"
+          method="Post"
+        >
+          <div class="p-2">{{session['user']}}</div>
+          <button class="btn btn-danger my-2 my-sm-0" type="submit">
+            Logout
+          </button>
+        </form>
+        {% endif %}
+      </div>
+    </nav>
+    {% with messages = get_flashed_messages() %} {% if messages %} {% for
+    message in messages %}
+    <div class="alert alert-danger" role="alert">{{ message }}</div>
+    {% endfor %} {% endif %} {% endwith %} {% block body %} {% endblock body %}
+
+    <script>
+      // Example starter JavaScript for disabling form submissions if there are invalid fields
+      (function () {
+        "use strict";
+
+        // Fetch all the forms we want to apply custom Bootstrap validation styles to
+        var forms = document.querySelectorAll(".needs-validation");
+
+        // Loop over them and prevent submission
+        Array.prototype.slice.call(forms).forEach(function (form) {
+          form.addEventListener(
+            "submit",
+            function (event) {
+              if (!form.checkValidity()) {
+                event.preventDefault();
+                event.stopPropagation();
+              }
+
+              form.classList.add("was-validated");
+            },
+            false
+          );
+        });
+      })();
+    </script>
+  </body>
+</html>

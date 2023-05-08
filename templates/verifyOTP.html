@@ -1,0 +1,30 @@
+{% extends 'base.html' %}
+
+{% block body %}
+    <div class="row">
+    <div class="offset-md-4 col-md-4 card">
+        <div class="card-header">
+            <h5 class="card-title">OTP</h5>
+
+        </div>
+        <div class="card-body">
+            <form action="" method="post">
+                <div class="">
+                    <label for="validationCustom01" class="form-label pt-2 pb-2">Enter OTP</label>
+                    <input type="text" class="form-control" name="OTP" required>
+                    <div class="valid-feedback">
+                        Looks good!
+                    </div>
+                    <div class="col-12 text-center pt-3">
+                        <button class="btn btn-primary " type="submit">Submit form</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+        <div class="card-footer">
+            Footer
+        </div>
+    </div>
+</div>
+{% endblock body %}
+    

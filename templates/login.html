@@ -1,0 +1,36 @@
+{% extends 'base.html' %}
+
+{% block body %}
+<div class="row">
+    <div class="offset-md-4 col-md-4 card">
+        <div class="card-header">
+            <h5 class="card-title">Login</h5>
+
+        </div>
+        <div class="card-body">
+    <form class="container  g-3 needs-validation" novalidate action="" method="post">
+      <div class="  ">
+        <label for="validationCustom01" class="form-label pt-2 pb-2">Email Id</label>
+        <input type="text" class="form-control" name="username" required>
+        <div class="valid-feedback">
+          Looks good!
+        </div>
+        <label for="validationCustom02" class="form-label pt-2 pb-2">Password</label>
+        <input type="text" class="form-control" name="password" required>
+        <div class="valid-feedback">
+          Looks good!
+        </div>
+        <div class="text-center pt-4">
+        <button class="btn btn-primary align-items-center" type="submit">Submit form</button>
+      </div>
+      </div>
+      
+    </form>
+    </div>
+        <div class="card-footer">
+            Footer
+        </div>
+    </div>
+</div>
+{% endblock body %}
+    
