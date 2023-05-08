@@ -9,6 +9,10 @@ from datetime import datetime, timedelta
 from flask_oauthlib.client import oauthlib
 from authlib.integrations.flask_client import OAuth
 import json
+import os
+from dotenv import load_dotenv
+
+load_dotenv()
 
 try:
     # Configure application
@@ -18,37 +22,17 @@ try:
     app.config["MAIL_SERVER"] = "smtp.gmail.com"
     app.config["MAIL_PORT"] = 465
     app.config["MAIL_USE_SSL"] = True
-    app.config["MAIL_USERNAME"] = "gokulfarm056@gmail.com"
-    app.config["MAIL_PASSWORD"] = "upvaozwdapbeclfl"
+    app.config["MAIL_USERNAME"] = os.getenv("EMAIL")
+    app.config["MAIL_PASSWORD"] = os.getenv("PASSWORD")
     mail = Mail(app)
-    app.secret_key = "appsecretkey"
-
-    # for Google account OAuth authentication
-    app.config["SECRET_KEY"] = "mysecretkey"
-    app.config[
-        os.environ.get("CLIENT_ID")
-    ] = "981561603285-ean6r397dgjvfmjpl3qr9u4mh9dmpqhk.apps.googleusercontent.com"
-    app.config["GOOGLE_CLIENT_SECRET"] = "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"
-    app.config["GOOGLE_AUTH_URL"] = "https://accounts.google.com/o/oauth2/auth"
-    app.config["GOOGLE_TOKEN_URL"] = "https://accounts.google.com/o/oauth2/token"
-    app.config["GOOGLE_USERINFO_URL"] = "https://www.googleapis.com/oauth2/v1/userinfo"
-
+    app.secret_key = os.getenv("SECRETKEY")
     # configure Database Server connection
     app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///dbs.sqlite3"
     db = SQLAlchemy(app)
 
-    # configure oauth app
-    app.config["SERVER_NAME"] = "localhost:5000"
-    oauth = OAuth(app)
-
 
 except:
     pass
-
-
-def sendmail():
-    pass
-
 
 #########################################################################################################################
 ########## Models ##########
@@ -74,76 +58,6 @@ userTable = UserTable(db, user)
 
 #########################################################################################################################
 ########## routes for application ##########
-
-
-from google_auth_oauthlib.flow import Flow
-from google.oauth2.credentials import Credentials
-
-CLIENT_ID = "YOUR_CLIENT_ID"
-CLIENT_SECRET = "YOUR_CLIENT_SECRET"
-
-app.secret_key = "some_secret_key"
-app.config["SESSION_TYPE"] = "filesystem"
-app.config["GOOGLE_CLIENT_ID"] = CLIENT_ID
-app.config["GOOGLE_CLIENT_SECRET"] = CLIENT_SECRET
-
-auth_client = Flow.from_client_secrets_file(
-    "client_secret.json",
-    scopes=["openid", "email", "profile"],
-    redirect_uri=request.base_url + "/callback",
-)
-
-from google.oauth2 import id_token
-from google.auth.transport import requests
-
-
-@app.route("/login")
-def login():
-    google_provider_cfg = requests.get(
-        "https://accounts.google.com/.well-known/openid-configuration"
-    ).json()
-    authorization_endpoint = google_provider_cfg["authorization_endpoint"]
-
-    request_uri = auth_client.prepare_request_uri(
-        authorization_endpoint,
-        redirect_uri=request.base_url + "/callback",
-        scope=["openid", "email", "profile"],
-    )
-
-    return redirect(request_uri)
-
-
-@app.route("/login/callback")
-def callback():
-    code = request.args.get("code")
-    google_provider_cfg = requests.get(
-        "https://accounts.google.com/.well-known/openid-configuration"
-    ).json()
-    token_endpoint = google_provider_cfg["token_endpoint"]
-    token_url, headers, body = auth_client.prepare_token_request(
-        token_endpoint,
-        authorization_response=request.url,
-        redirect_url=request.base_url,
-        code=code,
-    )
-    token_response = requests.post(
-        token_url, headers=headers, data=body, auth=(CLIENT_ID, CLIENT_SECRET)
-    )
-    auth_client.parse_request_body_response(json.dumps(token_response.json()))
-
-    userinfo_endpoint = google_provider_cfg["userinfo_endpoint"]
-    uri, headers, body = auth_client.add_token(userinfo_endpoint)
-    userinfo_response = requests.get(uri, headers=headers, data=body)
-
-    if userinfo_response.json().get("email_verified"):
-        unique_id = userinfo_response.json()["sub"]
-        users_email = userinfo_response.json()["email"]
-        picture = userinfo_response.json()["picture"]
-        users_name = userinfo_response.json()["given_name"]
-    else:
-        return "User email not available or not verified by Google.", 400
-
-    return f"{users_name} ({users_email}) has been successfully authenticated!"
 
 
 # route for redirect to getMail.html page that take email for sending authentication email
@@ -285,33 +199,33 @@ def Logout():
 
 
 # route for login page
-# @app.route("/login", methods=["GET", "POST"])
-# def login():
-#     if "user" in session.keys():
-#         flash("already logged in")
-#         return redirect("/")
-#     if request.method == "POST":
-#         username = request.form["username"]
-#         if not validate.checkNumber(username) and not validate.checkEmail(username):
-#             flash("enter proper username")
-#         else:
-#             password = request.form["password"]
-#             if validate.checkNumber(username):
-#                 userLogin = user.query.filter_by(
-#                     phone=username, password=password
-#                 ).first()
-#             else:
-#                 userLogin = user.query.filter_by(
-#                     email=username, password=password
-#                 ).first()
-#             print(userLogin)
-#             if userLogin != None:
-#                 session["user"] = userLogin.email
-#                 flash("login successful")
-#                 return redirect("/")
-#             else:
-#                 flash("wrong username or password")
-#     return render_template("login.html")
+@app.route("/login", methods=["GET", "POST"])
+def login():
+    if "user" in session.keys():
+        flash("already logged in")
+        return redirect("/")
+    if request.method == "POST":
+        username = request.form["username"]
+        if not validate.checkNumber(username) and not validate.checkEmail(username):
+            flash("enter proper username")
+        else:
+            password = request.form["password"]
+            if validate.checkNumber(username):
+                userLogin = user.query.filter_by(
+                    phone=username, password=password
+                ).first()
+            else:
+                userLogin = user.query.filter_by(
+                    email=username, password=password
+                ).first()
+            print(userLogin)
+            if userLogin != None:
+                session["user"] = userLogin.email
+                flash("login successful")
+                return redirect("/")
+            else:
+                flash("wrong username or password")
+    return render_template("login.html")
 
 
 # route for registering users

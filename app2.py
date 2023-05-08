@@ -1,27 +1,41 @@
+##############################################################################################
+##use data base for otp ##
+##############################################################################################
+
 from flask import Flask, render_template, request, redirect, url_for, flash, session
 from flask_sqlalchemy import SQLAlchemy
 from flask_mail import Mail, Message
 import random
 import validate
 from dataBase import UserTable
+import os
+from dotenv import load_dotenv
 
+load_dotenv()
+# Configure application
 app = Flask(__name__)
 
 
-app.config["MAIL_SERVER"] = "smtp.gmail.com"
-app.config["MAIL_PORT"] = 465
-app.config["MAIL_USE_SSL"] = True
-app.config["MAIL_USERNAME"] = "gokulfarm056@gmail.com"
-app.config["MAIL_PASSWORD"] = "upvaozwdapbeclfl"
-mail = Mail(app)
-app.secret_key = "appsecretkey"
 try:
+    # configure the EmailService credentials
+    app.config["MAIL_SERVER"] = "smtp.gmail.com"
+    app.config["MAIL_PORT"] = 465
+    app.config["MAIL_USE_SSL"] = True
+    app.config["MAIL_USERNAME"] = os.getenv("EMAIL")
+    app.config["MAIL_PASSWORD"] = os.getenv("PASSWORD")
+    mail = Mail(app)
+    app.secret_key = os.getenv("SECRETKEY")
+    # configure Database Server connection
     app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///dbs.sqlite3"
     db = SQLAlchemy(app)
 except:
     pass
 
+#########################################################################################################################
+########## Models ##########
 
+
+# model for User data stored in database
 class user(db.Model):
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     username = db.Column(db.String, unique=True, nullable=False)
@@ -31,20 +45,31 @@ class user(db.Model):
     OTP = db.Column(db.String(6), default=0)
 
 
+#########################################################################################################################
+########## tables Objects created ##########
+
+
+# create table Object
 userTable = UserTable(db, user)
 
 
+#########################################################################################################################
+########## routes for application ##########
+
+
+# route for redirect to getMail.html page that take email for sending authentication email
 @app.route("/Get email")
 def getEmail():
     return render_template("getMail.html")
 
 
+# route for sending authentication email
 @app.route("/sendEmail", methods=["post"])
 def sendEmail():
     sendMailId = request.form["emailId"]
     msg = Message()
     msg.subject = "forgot password?"
-    msg.sender = "gokulfarm056@gmail.com"
+    msg.sender = os.getenv("EMAIL")
     msg.recipients = [sendMailId]
     msg.body = "hello "
     msg.html = render_template("mailBody.html", email=sendMailId)
@@ -52,6 +77,7 @@ def sendEmail():
     return "check your mail "
 
 
+# verify that the OTP
 @app.route("/verify OTP", methods=["POST", "GET"])
 def verifyOTP():
     if request.method == "POST":
@@ -65,6 +91,7 @@ def verifyOTP():
     return render_template("verifyOTP.html")
 
 
+# route for change password of OTP
 @app.route("/OTPforgot_pass", methods=["GET", "POST"])
 def OTPforgot_pass():
     if request.method == "POST":
@@ -85,11 +112,13 @@ def OTPforgot_pass():
     return render_template("ForgotPasswordOTP.html")
 
 
+# route send email for OTP
 @app.route("/OTP email")
 def getOTPemail():
     return render_template("emailForOTP.html")
 
 
+# route send email for OTP
 @app.route("/sendOTP", methods=["POST"])
 def sendOTP():
     sendEmailID = request.form["emailId"]
@@ -98,7 +127,7 @@ def sendOTP():
         OTP = random.randint(100000, 999999)
         msg = Message()
         msg.subject = "forgot password?"
-        msg.sender = "gokulfarm056@gmail.com"
+        msg.sender = os.getenv("EMAIL")
         msg.recipients = [sendEmailID]
         msg.body = str(OTP)
         mail.send(msg)
@@ -109,11 +138,13 @@ def sendOTP():
         return redirect(url_for("getOTPemail"))
 
 
+# route for Home page
 @app.route("/")
 def Home():
     return render_template("home.html")
 
 
+# route for Logout page
 @app.route("/logout", methods=["POST"])
 def Logout():
     if "user" in session.keys():
@@ -126,6 +157,7 @@ def Logout():
 #     return render_template("page404.html"), 404
 
 
+# route for login
 @app.route("/login", methods=["GET", "POST"])
 def login():
     if "user" in session.keys():
@@ -150,6 +182,7 @@ def login():
     return render_template("login.html")
 
 
+# route for Registration page
 @app.route("/Registrations", methods=["GET", "POST"])
 def Register():
     if "user" in session.keys():
@@ -189,6 +222,7 @@ def Register():
     return render_template("Registration.html")
 
 
+# routes for forgot password routes
 @app.route("/forgot password", methods=["POST"])
 def forgot_pass():
     if request.method == "POST":
@@ -210,6 +244,7 @@ def forgot_pass():
             return render_template("ForgotPassword.html", email=email)
 
 
+# route for changing password
 @app.route("/change password", methods=["POST", "Get"])
 def changePassword():
     if "user" not in session.keys():
